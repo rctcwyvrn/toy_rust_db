@@ -1,5 +1,9 @@
 mod driver;
 mod parser;
+mod filter;
+
+use driver::Driver;
+use parser::parser::Parser;
 
 pub struct QueryResult {
     data: Vec<Vec<String>>,
@@ -32,13 +36,11 @@ impl std::fmt::Display for QueryError {
     }
 }
 
-use parser::Parser;
-use driver::Driver;
 
 pub fn perform_query(input_query: String) -> Result<QueryResult, QueryError> {
     let mut parser = Parser::new(&input_query);
     let parsed_query = parser.parse()?;
-    println!("query: {:?}", parsed_query);
+    // println!("query: {:?}", parsed_query);
     let mut driver = Driver::new();
     driver.perform_query(parsed_query)
 }

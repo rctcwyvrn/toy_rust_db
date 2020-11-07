@@ -1,5 +1,8 @@
 use crate::{QueryResult, parser::ParsedQuery, QueryError};
 
+pub struct DataRow {
+    
+}
 pub struct Driver {
 
 }
