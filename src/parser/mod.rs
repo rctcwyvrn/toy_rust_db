@@ -25,9 +25,11 @@ enum TokenType {
     From,
     Where,
 
-    Identifier,
-    Number,
     Comma,
+    Identifier,
+
+    Number,
+    String,
 
     // Operators
 
@@ -37,16 +39,13 @@ enum TokenType {
     GT,
     GEQ,
     EQ,
-    
+
     // string
     Is,
 
     // logical
     And,
     Or,
-
-    // Errors
-    Invalid,
 }
 
 impl Display for TokenType {

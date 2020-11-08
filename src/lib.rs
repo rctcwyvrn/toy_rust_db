@@ -28,6 +28,7 @@ impl std::fmt::Display for QueryResult {
 #[derive(Debug)]
 pub enum QueryError {
     BadSyntax(&'static str),
+    BadLex(&'static str),
     NumParseError(String),
 }
 

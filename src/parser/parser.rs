@@ -31,7 +31,7 @@ impl<'a> Parser<'a> {
 // Query parsing
 impl<'a> Parser<'a> {
     fn get_next(&mut self) -> Result<Token, QueryError> {
-        self.lexer.next().ok_or(QueryError::BadSyntax("EOF reached"))
+        self.lexer.next().ok_or(QueryError::BadSyntax("EOF reached"))?
     }
 
     /// Matches the next token with the given token type
@@ -53,7 +53,7 @@ impl<'a> Parser<'a> {
     /// Peeks the next token, returns true if there is a next token and it is the correct type
     fn peek_next_type(&mut self, token_type: TokenType) -> bool {
         let peek = self.lexer.peek();
-        return peek.map(|p| p.kind) == Some(token_type);
+        matches!(peek, Some(Ok(x)) if x.kind == token_type)
     }
 
     fn parse_select(&mut self) -> Result<Vec<String>, QueryError> {
@@ -64,7 +64,7 @@ impl<'a> Parser<'a> {
 
         while self.peek_next_type(TokenType::Comma) {
             self.lexer.next();
-            let next_col = self.match_next(TokenType::Select, "Expected column identifier after comma in select")?;
+            let next_col = self.match_next(TokenType::Identifier, "Expected column identifier after comma in select")?;
             cols.push(next_col.lexemme.unwrap());
         }
         Ok(cols)
@@ -96,7 +96,7 @@ impl<'a> Parser<'a> {
 
         let filter_kind = self.get_next()?;
         let filter_val = self.get_next()?;
-
+        // println!("{:?} | {:?} | {:?}", col, filter_kind, filter_val);
         let filter_res: Result<Box<dyn FilterRule>, QueryError> = match filter_val.kind {
             TokenType::Number => {
                 let num_lexemme = filter_val.lexemme.ok_or(STRANGE_MISSING_LEXEMME_ERR)?;
@@ -108,7 +108,7 @@ impl<'a> Parser<'a> {
                 };
                 Ok(Box::new(num_filter))
             }
-            TokenType::Identifier => {
+            TokenType::String => {
                 if filter_kind.kind != TokenType::Is {
                     Err(QueryError::BadSyntax("Operator for string comparisons must be 'is'"))
                 } else {

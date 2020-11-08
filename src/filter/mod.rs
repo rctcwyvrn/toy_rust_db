@@ -44,8 +44,8 @@ pub enum LogicalOp {
 #[derive(Debug)]
 pub struct LogicalFilter {
     pub f1: Box<dyn FilterRule>,
-    pub f2: Box<dyn FilterRule>,
     pub op: LogicalOp,
+    pub f2: Box<dyn FilterRule>,
 }
 
 impl FilterRule for LogicalFilter {
