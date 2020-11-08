@@ -49,6 +49,14 @@ impl<'a> Lexer<'a> {
                 kind: TokenType::From,
                 lexemme: None,
             },
+            "and" => Token {
+                kind: TokenType::And,
+                lexemme: None,
+            },
+            "or" => Token {
+                kind: TokenType::Or,
+                lexemme: None,
+            },
             _ => Token {
                 kind: TokenType::Identifier,
                 lexemme: Some(data),
@@ -77,6 +85,42 @@ impl<'a> Iterator for Lexer<'a> {
                 kind: TokenType::Comma,
                 lexemme: None,
             },
+            '<' => {
+                let kind = if let Some('=') = self.iter.peek() {
+                    self.iter.next();
+                    TokenType::LEQ
+                } else {
+                    TokenType::LT
+                };
+                Token {
+                    kind,
+                    lexemme: None,
+                }
+            }
+            '>' => {
+                let kind = if let Some('=') = self.iter.peek() {
+                    self.iter.next();
+                    TokenType::GEQ
+                } else {
+                    TokenType::GT
+                };
+                Token {
+                    kind,
+                    lexemme: None,
+                }
+            }
+            '=' => {
+                let kind = if let Some('=') = self.iter.peek() {
+                    self.iter.next();
+                    TokenType::EQ
+                } else {
+                    TokenType::Invalid // Single = is invalid
+                };
+                Token {
+                    kind,
+                    lexemme: None,
+                }
+            }
             c if c.is_numeric() => self.numeric(c)?,
             c if c.is_alphabetic() => self.alpha(c)?,
             _ => Token {

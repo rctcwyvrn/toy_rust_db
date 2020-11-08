@@ -1,11 +1,11 @@
 pub mod parser;
 mod lexer;
 
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 
 use crate::filter::FilterRule;
 
-// #[derive(Debug)]
+#[derive(Debug)]
 pub struct ParsedQuery{
     cols: Vec<String>,
     from: String,
@@ -13,7 +13,7 @@ pub struct ParsedQuery{
 }
 
 #[derive(Debug, PartialEq)]
-struct Token {
+pub struct Token {
     kind: TokenType,
     lexemme: Option<String>,
 }
@@ -29,6 +29,22 @@ enum TokenType {
     Number,
     Comma,
 
+    // Operators
+    LT,
+    LEQ,
+    GT,
+    GEQ,
+    EQ,
+
+    And,
+    Or,
+
     // Errors
     Invalid,
+}
+
+impl Display for TokenType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
