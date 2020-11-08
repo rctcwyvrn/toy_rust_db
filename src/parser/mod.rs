@@ -30,12 +30,18 @@ enum TokenType {
     Comma,
 
     // Operators
+
+    // num
     LT,
     LEQ,
     GT,
     GEQ,
     EQ,
+    
+    // string
+    Is,
 
+    // logical
     And,
     Or,
 

@@ -109,12 +109,16 @@ impl<'a> Parser<'a> {
                 Ok(Box::new(num_filter))
             }
             TokenType::Identifier => {
-                let val = filter_val.lexemme.ok_or(STRANGE_MISSING_LEXEMME_ERR)?;
-                let str_filter = StringFilter {
-                    col,
-                    val,
-                };
-                Ok(Box::new(str_filter))
+                if filter_kind.kind != TokenType::Is {
+                    Err(QueryError::BadSyntax("Operator for string comparisons must be 'is'"))
+                } else {
+                    let val = filter_val.lexemme.ok_or(STRANGE_MISSING_LEXEMME_ERR)?;
+                    let str_filter = StringFilter {
+                        col,
+                        val,
+                    };
+                    Ok(Box::new(str_filter))
+                }
             }
             _ => Err(QueryError::BadSyntax("Invalid token type for a filter value, must be a string or a number and not a keyword"))
         };

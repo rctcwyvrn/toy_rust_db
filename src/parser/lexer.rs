@@ -57,6 +57,10 @@ impl<'a> Lexer<'a> {
                 kind: TokenType::Or,
                 lexemme: None,
             },
+            "is" => Token {
+                kind: TokenType::Is,
+                lexemme: None,
+            },
             _ => Token {
                 kind: TokenType::Identifier,
                 lexemme: Some(data),

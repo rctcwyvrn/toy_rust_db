@@ -1,3 +1,3 @@
 select code, avg from test where avg > 50
-select code, avg from test where dept == "MATH"
-select code, avg from test where avg > 50 and dept == "MATH"
+select code, avg from test where dept is "MATH"
+select code, avg from test where avg > 50 and dept is "MATH"
