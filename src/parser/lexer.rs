@@ -1,4 +1,4 @@
-use std::{str::Chars, iter::Peekable};
+use std::{iter::Peekable, str::Chars};
 
 use crate::QueryError;
 
@@ -25,13 +25,14 @@ impl<'a> Lexer<'a> {
         Ok(Token {
             kind: TokenType::Number,
             lexemme: Some(num),
-        }).into()
+        })
+        .into()
     }
 
     fn string(&mut self) -> Option<Result<Token, QueryError>> {
         let mut str = String::new();
         loop {
-            // Note: Might need to change this in the future, but this should work for now. 
+            // Note: Might need to change this in the future, but this should work for now.
             // Strings capture all whitespace and whatever weirdness the user throws inbetween the quotes
             match self.iter.peek()? {
                 c if !(c == &'\"') => {
@@ -44,7 +45,8 @@ impl<'a> Lexer<'a> {
         Ok(Token {
             kind: TokenType::String,
             lexemme: Some(str),
-        }).into()
+        })
+        .into()
     }
 
     fn alpha(&mut self, first: char) -> Option<Result<Token, QueryError>> {
@@ -110,7 +112,8 @@ impl<'a> Iterator for Lexer<'a> {
             ',' => Token {
                 kind: TokenType::Comma,
                 lexemme: None,
-            }.into(),
+            }
+            .into(),
             '<' => {
                 let kind = if let Some('=') = self.iter.peek() {
                     self.iter.next();
@@ -121,7 +124,8 @@ impl<'a> Iterator for Lexer<'a> {
                 Token {
                     kind,
                     lexemme: None,
-                }.into()
+                }
+                .into()
             }
             '>' => {
                 let kind = if let Some('=') = self.iter.peek() {
@@ -133,31 +137,33 @@ impl<'a> Iterator for Lexer<'a> {
                 Token {
                     kind,
                     lexemme: None,
-                }.into()
+                }
+                .into()
             }
             '=' => {
                 let kind = if let Some('=') = self.iter.peek() {
                     self.iter.next();
                     TokenType::EQ
                 } else {
-                    return Some(Err(QueryError::BadLex("Single '=' is invalid")))
+                    return Some(Err(QueryError::BadLex("Single '=' is invalid")));
                 };
                 Token {
                     kind,
                     lexemme: None,
-                }.into()
+                }
+                .into()
             }
             '\"' => self.string()?,
             c if c.is_numeric() => self.numeric(c)?,
             c if c.is_alphabetic() => self.alpha(c)?,
-            _ => Err(QueryError::BadLex("Invalid token, unable to lex"))
+            _ => Err(QueryError::BadLex("Invalid token, unable to lex")),
         };
         Some(token)
     }
 }
 
-impl Into<Result<Token,QueryError>> for Token {
-    fn into(self) -> Result<Token,QueryError> {
+impl Into<Result<Token, QueryError>> for Token {
+    fn into(self) -> Result<Token, QueryError> {
         Ok(self)
     }
 }

@@ -1,12 +1,12 @@
-pub mod parser;
 mod lexer;
+pub mod parser;
 
 use std::fmt::{Debug, Display};
 
 use crate::filter::FilterRule;
 
 #[derive(Debug)]
-pub struct ParsedQuery{
+pub struct ParsedQuery {
     cols: Vec<String>,
     from: String,
     filter: Option<Box<dyn FilterRule>>,

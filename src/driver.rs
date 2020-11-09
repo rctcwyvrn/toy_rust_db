@@ -1,9 +1,7 @@
-use csv::StringRecord;
-
-use crate::{QueryResult, parser::ParsedQuery, QueryError, data::DataAccessor};
+use crate::{data::DataAccessor, parser::ParsedQuery, QueryError, QueryResult};
 
 pub struct Driver {
-    data: DataAccessor
+    data: DataAccessor,
 }
 
 impl Driver {

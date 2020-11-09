@@ -1,8 +1,8 @@
 #![feature(try_blocks)]
-use std::io::{self};
 use std::io::Write;
+use std::io::{self};
 
-use toy_rust_db::{perform_query};
+use toy_rust_db::perform_query;
 
 fn main() {
     repl();
@@ -29,6 +29,5 @@ fn repl() {
             Ok(results) => println!("{}", results),
             Err(query_err) => eprintln!("{}", query_err),
         }
-
     }
 }

@@ -1,9 +1,13 @@
-use std::{iter::Peekable};
-use crate::{QueryError, filter::{FilterRule, LogicalFilter, LogicalOp, NumberFilter, NumberOp, StringFilter}};
+use crate::{
+    filter::{FilterRule, LogicalFilter, LogicalOp, NumberFilter, NumberOp, StringFilter},
+    QueryError,
+};
+use std::iter::Peekable;
 
-use super::{ParsedQuery, Token, TokenType, lexer::Lexer};
+use super::{lexer::Lexer, ParsedQuery, Token, TokenType};
 
-const STRANGE_MISSING_LEXEMME_ERR: QueryError = QueryError::BadSyntax("?? How did this token not have a lexemme?? This should never happen!");
+const STRANGE_MISSING_LEXEMME_ERR: QueryError =
+    QueryError::BadSyntax("?? How did this token not have a lexemme?? This should never happen!");
 pub struct Parser<'a> {
     lexer: Peekable<Lexer<'a>>,
 }
@@ -14,11 +18,7 @@ impl<'a> Parser<'a> {
         let cols = self.parse_select()?;
         let from = self.parse_from()?;
         let filter = self.parse_where()?;
-        Ok(ParsedQuery {
-            cols,
-            from,
-            filter,
-        })
+        Ok(ParsedQuery { cols, from, filter })
     }
 
     pub fn new<'b>(input_query: &'b str) -> Parser<'b> {
@@ -31,17 +31,23 @@ impl<'a> Parser<'a> {
 // Query parsing
 impl<'a> Parser<'a> {
     fn get_next(&mut self) -> Result<Token, QueryError> {
-        self.lexer.next().ok_or(QueryError::BadSyntax("EOF reached"))?
+        self.lexer
+            .next()
+            .ok_or(QueryError::BadSyntax("EOF reached"))?
     }
 
     /// Matches the next token with the given token type
-    /// 
+    ///
     /// Returns Err(QueryError::BadSyntax("EOF reached")) if there is no next token
-    /// 
+    ///
     /// Return Err(QueryError::BadSyntax(err)) if the token type doesn't match
-    /// 
+    ///
     /// Returns Ok(token) otherwise
-    fn match_next(&mut self, token_type: TokenType, err: &'static str) -> Result<Token, QueryError> {
+    fn match_next(
+        &mut self,
+        token_type: TokenType,
+        err: &'static str,
+    ) -> Result<Token, QueryError> {
         let next_token = self.get_next()?;
         if next_token.kind == token_type {
             Ok(next_token)
@@ -58,13 +64,19 @@ impl<'a> Parser<'a> {
 
     fn parse_select(&mut self) -> Result<Vec<String>, QueryError> {
         self.match_next(TokenType::Select, "Missing 'select'")?;
-        let first_col = self.match_next(TokenType::Identifier, "Expected at least one column after select")?;
+        let first_col = self.match_next(
+            TokenType::Identifier,
+            "Expected at least one column after select",
+        )?;
         let mut cols = Vec::new();
         cols.push(first_col.lexemme.unwrap());
 
         while self.peek_next_type(TokenType::Comma) {
             self.lexer.next();
-            let next_col = self.match_next(TokenType::Identifier, "Expected column identifier after comma in select")?;
+            let next_col = self.match_next(
+                TokenType::Identifier,
+                "Expected column identifier after comma in select",
+            )?;
             cols.push(next_col.lexemme.unwrap());
         }
         Ok(cols)
@@ -91,7 +103,10 @@ impl<'a> Parser<'a> {
 // Filter parsing
 impl<'a> Parser<'a> {
     fn parse_filter(&mut self) -> Result<Box<dyn FilterRule>, QueryError> {
-        let col_token = self.match_next(TokenType::Identifier, "Expected col name as first token in filter")?;
+        let col_token = self.match_next(
+            TokenType::Identifier,
+            "Expected col name as first token in filter",
+        )?;
         let col = col_token.lexemme.ok_or(STRANGE_MISSING_LEXEMME_ERR)?;
 
         let filter_kind = self.get_next()?;
@@ -150,7 +165,9 @@ impl<'a> Parser<'a> {
             TokenType::LEQ => Ok(NumberOp::LEQ),
             TokenType::GEQ => Ok(NumberOp::GEQ),
             TokenType::EQ => Ok(NumberOp::EQ),
-            _ => Err(QueryError::BadSyntax("Invalid operator for number comparisons"))
+            _ => Err(QueryError::BadSyntax(
+                "Invalid operator for number comparisons",
+            )),
         }
     }
 

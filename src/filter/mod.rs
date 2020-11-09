@@ -2,7 +2,6 @@ use std::fmt::Debug;
 
 use csv::StringRecord;
 
-
 pub trait FilterRule: Debug {
     fn filter(&self, x: StringRecord) -> bool;
 }

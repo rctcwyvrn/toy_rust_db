@@ -1,7 +1,7 @@
-mod driver;
-mod parser;
-mod filter;
 mod data;
+mod driver;
+mod filter;
+mod parser;
 
 use driver::Driver;
 use parser::parser::Parser;
@@ -40,7 +40,6 @@ impl std::fmt::Display for QueryError {
         std::fmt::Debug::fmt(self, f)
     }
 }
-
 
 pub fn perform_query(input_query: String) -> Result<QueryResult, QueryError> {
     let mut parser = Parser::new(&input_query);
