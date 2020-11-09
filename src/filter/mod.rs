@@ -1,9 +1,10 @@
 use std::fmt::Debug;
 
-use crate::driver::DataRow;
+use csv::StringRecord;
+
 
 pub trait FilterRule: Debug {
-    fn filter(&self, x: DataRow) -> bool;
+    fn filter(&self, x: StringRecord) -> bool;
 }
 #[derive(Debug)]
 pub enum NumberOp {
@@ -21,7 +22,7 @@ pub struct NumberFilter {
 }
 
 impl FilterRule for NumberFilter {
-    fn filter(&self, x: DataRow) -> bool {
+    fn filter(&self, x: StringRecord) -> bool {
         todo!()
     }
 }
@@ -32,7 +33,7 @@ pub struct StringFilter {
 }
 
 impl FilterRule for StringFilter {
-    fn filter(&self, x: DataRow) -> bool {
+    fn filter(&self, x: StringRecord) -> bool {
         todo!()
     }
 }
@@ -49,7 +50,7 @@ pub struct LogicalFilter {
 }
 
 impl FilterRule for LogicalFilter {
-    fn filter(&self, x: DataRow) -> bool {
+    fn filter(&self, x: StringRecord) -> bool {
         todo!()
     }
 }

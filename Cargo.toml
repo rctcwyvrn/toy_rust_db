@@ -9,4 +9,6 @@ edition = "2018"
 [lib]
 name = "toy_rust_db"
 path = "src/lib.rs"
+
 [dependencies]
+csv = "*"

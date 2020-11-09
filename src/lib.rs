@@ -1,6 +1,7 @@
 mod driver;
 mod parser;
 mod filter;
+mod data;
 
 use driver::Driver;
 use parser::parser::Parser;
@@ -27,9 +28,11 @@ impl std::fmt::Display for QueryResult {
 
 #[derive(Debug)]
 pub enum QueryError {
-    BadSyntax(&'static str),
+    BadSyntax(&'static str), // use codespan eventually
     BadLex(&'static str),
     NumParseError(String),
+    FileError(String),
+    BadCSV(String),
 }
 
 impl std::fmt::Display for QueryError {
@@ -43,6 +46,6 @@ pub fn perform_query(input_query: String) -> Result<QueryResult, QueryError> {
     let mut parser = Parser::new(&input_query);
     let parsed_query = parser.parse()?;
     println!("query: {:?}", parsed_query);
-    let mut driver = Driver::new();
+    let mut driver = Driver::new()?;
     driver.perform_query(parsed_query)
 }
