@@ -6,7 +6,7 @@ use crate::QueryError;
 // fixme: eventually the cli params will be passed into here somehow
 const CONFIG_FILE_PATH: &str = "./data/config.csv";
 const CONFIG_FILE_NAME: &str = "config.csv";
-const DATA_DIR_PATH: &str = "./data";
+const DATA_DIR_PATH: &str = "./data/";
 
 pub struct DataAccessor {
     pub ready: Vec<String>,
@@ -14,25 +14,40 @@ pub struct DataAccessor {
 }
 
 impl DataAccessor {
-    fn get(&mut self, request: String) -> Result<&Vec<StringRecord>, QueryError> {
-        if !self.loaded.contains_key(&request) {
-            self.load(request.clone())?;
-        }
-        Ok(&self.loaded.get(&request).unwrap())
+    /// This is stupid, but I don't have enough braincells to put this into the config right now
+    ///
+    /// Seems like the smart thing to do would be to make the config a json and have it keep track of the available datasets and their headers
+    /// This will do for now so I can throw it into the Parser, this api should be fine
+    pub fn get_headers(dataset: &String) -> Result<Vec<String>, QueryError> {
+        let path = DATA_DIR_PATH.to_string() + dataset.as_ref() + ".csv";
+        let mut reader = csv::Reader::from_path(path)?;
+        let headers = reader
+            .headers()?
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect();
+        Ok(headers)
     }
 
-    fn load(&mut self, request: String) -> Result<(), QueryError> {
-        if !self.ready.contains(&request) {
+    pub fn get(&mut self, dataset: String) -> Result<&Vec<StringRecord>, QueryError> {
+        if !self.loaded.contains_key(&dataset) {
+            self.load(dataset.clone())?;
+        }
+        Ok(&self.loaded.get(&dataset).unwrap())
+    }
+
+    fn load(&mut self, dataset: String) -> Result<(), QueryError> {
+        if !self.ready.contains(&dataset) {
             Err(QueryError::BadSyntax("Requested dataset does not exist"))
         } else {
-            let path = DATA_DIR_PATH.to_string() + request.as_ref();
+            let path = DATA_DIR_PATH.to_string() + dataset.as_ref() + ".csv";
             let mut reader = csv::Reader::from_path(path)?;
             let loaded: Result<Vec<StringRecord>, QueryError> = reader
                 .records()
                 // Convert csv errors to QueryErrors
                 .map(|r| r.map_err(|e| QueryError::from(e)))
                 .collect();
-            self.loaded.insert(request, loaded?);
+            self.loaded.insert(dataset, loaded?);
             Ok(())
         }
     }
@@ -69,9 +84,11 @@ impl DataAccessor {
                     if name.as_str() == CONFIG_FILE_NAME {
                         continue;
                     } else {
-                        config_file.write_all(name.as_bytes())?;
+                        // Remove the .csv file extension
+                        let cleaned = name.split(".csv").collect::<Vec<&str>>()[0];
+                        config_file.write_all(cleaned.as_bytes())?;
                         config_file.write_all("\n".as_bytes())?;
-                        datasets.push(name);
+                        datasets.push(cleaned.to_string());
                     }
                 }
                 Err(_) => {

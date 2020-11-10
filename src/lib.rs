@@ -31,6 +31,9 @@ pub enum QueryError {
     BadSyntax(&'static str), // use codespan eventually
     BadLex(&'static str),
     NumParseError(String),
+
+    QueryFailed(&'static str),
+
     FileError(String),
     BadCSV(String),
 }
@@ -46,5 +49,9 @@ pub fn perform_query(input_query: String) -> Result<QueryResult, QueryError> {
     let parsed_query = parser.parse()?;
     println!("query: {:?}", parsed_query);
     let mut driver = Driver::new()?;
-    driver.perform_query(parsed_query)
+    let data = driver.perform_query(parsed_query)?;
+    Ok(QueryResult {
+        data,
+        query: input_query,
+    })
 }

@@ -1,4 +1,5 @@
 use crate::{
+    data::DataAccessor,
     filter::{FilterRule, LogicalFilter, LogicalOp, NumberFilter, NumberOp, StringFilter},
     QueryError,
 };
@@ -8,6 +9,8 @@ use super::{lexer::Lexer, ParsedQuery, Token, TokenType};
 
 const STRANGE_MISSING_LEXEMME_ERR: QueryError =
     QueryError::BadSyntax("?? How did this token not have a lexemme?? This should never happen!");
+
+const UNKNOWN_COL: QueryError = QueryError::BadSyntax("Unknown column for dataset");
 pub struct Parser<'a> {
     lexer: Peekable<Lexer<'a>>,
 }
@@ -15,9 +18,16 @@ pub struct Parser<'a> {
 // Public interface
 impl<'a> Parser<'a> {
     pub fn parse(&mut self) -> Result<ParsedQuery, QueryError> {
-        let cols = self.parse_select()?;
+        let col_names = self.parse_select()?;
         let from = self.parse_from()?;
-        let filter = self.parse_where()?;
+        let headers = DataAccessor::get_headers(&from)?;
+        let cols: Option<Vec<usize>> = col_names
+            .iter()
+            .map(|col| headers.iter().position(|x| x == col))
+            .collect();
+        let cols = cols.ok_or(UNKNOWN_COL)?;
+
+        let filter = self.parse_where(headers)?;
         Ok(ParsedQuery { cols, from, filter })
     }
 
@@ -89,12 +99,15 @@ impl<'a> Parser<'a> {
         Ok(db_name)
     }
 
-    fn parse_where(&mut self) -> Result<Option<Box<dyn FilterRule>>, QueryError> {
+    fn parse_where(
+        &mut self,
+        headers: Vec<String>,
+    ) -> Result<Option<Box<dyn FilterRule>>, QueryError> {
         if !self.peek_next_type(TokenType::Where) {
             Ok(None)
         } else {
             self.lexer.next(); // where token
-            let filter = self.parse_filter()?;
+            let filter = self.parse_filter(headers)?;
             Ok(Some(filter))
         }
     }
@@ -102,13 +115,16 @@ impl<'a> Parser<'a> {
 
 // Filter parsing
 impl<'a> Parser<'a> {
-    fn parse_filter(&mut self) -> Result<Box<dyn FilterRule>, QueryError> {
+    fn parse_filter(&mut self, headers: Vec<String>) -> Result<Box<dyn FilterRule>, QueryError> {
         let col_token = self.match_next(
             TokenType::Identifier,
             "Expected col name as first token in filter",
         )?;
-        let col = col_token.lexemme.ok_or(STRANGE_MISSING_LEXEMME_ERR)?;
-
+        let col_name = col_token.lexemme.ok_or(STRANGE_MISSING_LEXEMME_ERR)?;
+        let col = headers
+            .iter()
+            .position(|x| &col_name == x)
+            .ok_or(UNKNOWN_COL)?;
         let filter_kind = self.get_next()?;
         let filter_val = self.get_next()?;
         // println!("{:?} | {:?} | {:?}", col, filter_kind, filter_val);
@@ -145,7 +161,7 @@ impl<'a> Parser<'a> {
         let is_logical = self.peek_next_type(TokenType::And) || self.peek_next_type(TokenType::Or);
         if is_logical {
             let logical_kind = self.get_next()?;
-            let f2 = self.parse_filter()?;
+            let f2 = self.parse_filter(headers)?;
             let logical_filter = LogicalFilter {
                 f1: filter,
                 f2,

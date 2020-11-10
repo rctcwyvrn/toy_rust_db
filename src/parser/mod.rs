@@ -7,9 +7,9 @@ use crate::filter::FilterRule;
 
 #[derive(Debug)]
 pub struct ParsedQuery {
-    cols: Vec<String>,
-    from: String,
-    filter: Option<Box<dyn FilterRule>>,
+    pub cols: Vec<usize>,
+    pub from: String,
+    pub filter: Option<Box<dyn FilterRule>>,
 }
 
 #[derive(Debug, PartialEq)]
